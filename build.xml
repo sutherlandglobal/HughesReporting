@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="HughesReporting">
+    <property environment="env"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+	<property name="target" value="1.7"/>
+    <property name="source" value="1.7"/>
+	
+	<property name="TOMEE_HOME" value="/opt/tomcat/apache-tomee-plus"/>
+	<property name="TOMEE_APP_DIR" value="${TOMEE_HOME}/webapps"/>
+	<property name="WEB_APP_DIR" value="${TOMEE_APP_DIR}/Hughes"/>
+	<property name="SITE_BUILD_DIR" value="/opt/tomcat/HughesReporting"/>
+	<property name="SITE_LIB" value="${SITE_BUILD_DIR}/WEB-INF/lib"/>
+	<property name="JAVA_SHARE_DIR" value="/usr/share/java"/>
+	<property name="WAR_FILE" value="Hughes.war"/>
+	<property name="JAR_FILE" value="HughesReporting.jar"/>
+	
+
+	
+    <path id="site.build.classes">
+        <pathelement location="${SITE_BUILD_DIR}/bin"/>
+		<pathelement location="${SITE_BUILD_DIR}/WEB-INF/classes"/>
+		<pathelement location="${SITE_LIB}/jtds-1.2.5.jar"/>
+    	<pathelement location="${SITE_LIB}/Helios.jar"/>
+    	<pathelement location="${SITE_LIB}/jdom-2.0.5.jar"/>
+		<pathelement location="${SITE_LIB}/jcommon-1.0.21.jar" />
+    	<pathelement location="${SITE_LIB}/jfreechart-1.0.17.jar"/>
+        <pathelement location="${SITE_LIB}/log4j-1.2.17.jar"/>
+        <pathelement location="${SITE_LIB}/servlet-api-2.5.jar"/>
+    </path>
+	<pathconvert property="site.build.classpath" pathsep=" ">
+   	 	<path refid="site.build.classes" />
+  	</pathconvert>
+	
+	<path id="site.build.junit.classes">
+		<pathelement location="${SITE_BUILD_DIR}/bin"/>
+		<pathelement location="${SITE_BUILD_DIR}/WEB-INF/classes"/>
+		<pathelement location="${JAVA_SHARE_DIR}/junit.jar"/>
+		<pathelement location="${SITE_LIB}/jtds-1.2.5.jar"/>
+    	<pathelement location="${SITE_LIB}/Helios.jar"/>
+    	<pathelement location="${SITE_LIB}/jdom-2.0.5.jar"/>
+		<pathelement location="${SITE_LIB}/jcommon-1.0.21.jar" />
+    	<pathelement location="${SITE_LIB}/jfreechart-1.0.17.jar"/>
+        <pathelement location="${SITE_LIB}/log4j-1.2.17.jar"/>
+        <pathelement location="${SITE_LIB}/servlet-api-2.5.jar"/>
+	</path>
+	<pathconvert property="site.build.junit.classpath" pathsep=" ">
+   	 	<path refid="site.build.junit.classes" />
+  	</pathconvert>
+	
+    <path id="site.deploy.classes">
+		<pathelement location="${WEB_APP_DIR}/WEB-INF/classes"/>
+		<pathelement location="${WEB_APP_DIR}/WEB-INF/lib/jtds-1.2.5.jar"/>
+    	<pathelement location="${WEB_APP_DIR}/WEB-INF/lib/Helios.jar"/>
+    	<pathelement location="${WEB_APP_DIR}/WEB-INF/lib/jdom-2.0.5.jar"/>
+		<pathelement location="${WEB_APP_DIR}/WEB-INF/lib/jcommon-1.0.21.jar" />
+    	<pathelement location="${WEB_APP_DIR}/WEB-INF/lib/jfreechart-1.0.17.jar"/>
+        <pathelement location="${WEB_APP_DIR}/WEB-INF/lib/log4j-1.2.17.jar"/>
+        <pathelement location="${TOMEE_HOME}/lib/servlet-api.jar"/>
+    </path>
+	<pathconvert property="site.deploy.classpath" pathsep=" ">
+   	 	<path refid="site.deploy.classes" />
+  	</pathconvert>
+	
+    <echo message="Tomee Home: ${TOMEE_HOME}"/>
+    <echo message="App Home: ${SITE_BUILD_DIR}"/>
+     <echo message="App Jar Dir: ${SITE_LIB}"/>
+     <echo message="App Deploy Dir: ${TOMEE_APP_DIR}"/>
+     <echo message="Java Share Dir: ${JAVA_SHARE_DIR}"/>
+   	 <echo message="Target Version: ${target}"/>
+     <echo message="Source Version: ${source}"/>
+	
+    <target name="init">
+    	
+        <mkdir dir="${SITE_BUILD_DIR}/bin"/>
+        <copy includeemptydirs="false" todir="${SITE_BUILD_DIR}/bin">
+            <fileset dir="${SITE_BUILD_DIR}/src">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    	
+    <target name="clean">
+        <delete dir="${SITE_BUILD_DIR}/bin" verbose="true"/>
+    	<delete dir="${SITE_BUILD_DIR}/test" verbose="on"/>
+    	<delete dir="${SITE_BUILD_DIR}/doc" verbose="on"/>
+    		
+    	<mkdir dir="${SITE_BUILD_DIR}/bin"/>
+    	
+    	<delete file="${SITE_BUILD_DIR}/${WAR_FILE}" verbose="true"/>
+    	<delete file="${SITE_BUILD_DIR}/${JAR_FILE}" verbose="true"/>
+
+    </target>
+	
+	<target name ="build-war" depends="build-jar">
+		<mkdir dir="${SITE_BUILD_DIR}/WEB-INF/classes"/>
+		<mkdir dir="${SITE_BUILD_DIR}/WEB-INF/classes/hughes"/>
+		<mkdir dir="${SITE_BUILD_DIR}/WEB-INF/classes/hughes/api"/>
+		
+        <copy includeemptydirs="false" todir="${SITE_BUILD_DIR}/WEB-INF/classes/hughes/api" verbose ="on">
+            <fileset dir="${SITE_BUILD_DIR}/bin/hughes/api">
+                <exclude name="**/package-info.java"/>
+            	<exclude name="**/test/**"/>
+            </fileset>
+        </copy>
+		
+		<copy file="${SITE_BUILD_DIR}/${JAR_FILE}" todir ="${SITE_BUILD_DIR}/WEB-INF/lib" verbose="on"/>
+		
+		<war destfile="${WAR_FILE}" webxml="${SITE_BUILD_DIR}/WEB-INF/WEB.xml" >
+
+	   		<fileset dir="${SITE_BUILD_DIR}/WebContent">
+	      		<include name="**/*"/>
+	   		</fileset>
+			
+			<fileset dir="${SITE_BUILD_DIR}" includes="META-INF/**"/>
+			<fileset dir="${SITE_BUILD_DIR}" includes="doc/**"/>
+			<fileset dir="${SITE_BUILD_DIR}" includes="test/**"/>
+		   	
+		   	<lib dir="${SITE_BUILD_DIR}/WEB-INF/lib">
+		   		<exclude name="servlet-api*jar"/>
+		   	</lib>
+		  	<classes dir="${SITE_BUILD_DIR}/WEB-INF/classes"/>
+		</war>
+	</target>
+	
+	<target name="undeploy">
+		<delete file="${TOMEE_APP_DIR}/${WAR_FILE}"/>
+		<delete dir="${TOMEE_APP_DIR}/Hughes"/>
+	</target>
+	
+	  <target name="javadoc" depends="build">
+	        <javadoc access="private" author="true" destdir="${SITE_BUILD_DIR}/doc/" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" 
+				packagenames="*"
+				source="${target}" splitindex="true" use="true" version="true" useexternalfile="true" >
+	        	
+				<classpath refid="site.build.classes"/>
+    	
+	        	<fileset dir="${SITE_BUILD_DIR}/src" defaultexcludes="yes">
+	        	  <exclude name="**/test/**"/>
+	        	</fileset>
+	        	
+				<link href="http://download.oracle.com/javase/7/docs/api/"/>
+	        	<link href="http://www.jfree.org/jfreechart/api/javadoc/"/>
+	        	<link href="http://logging.apache.org/log4j/2.x/log4j-api/apidocs/"/>
+	        	<link href="https://tomcat.apache.org/tomcat-7.0-doc/servletapi/"/>
+			</javadoc>
+	  </target>
+	<target name="test" depends="build,build-jar">
+  		<mkdir dir="${SITE_BUILD_DIR}/logs"/>
+  		<mkdir dir="${SITE_BUILD_DIR}/test"/>
+		
+		<junit failureProperty="test.failure" fork="yes">
+			<classpath refid="site.build.junit.classes" />
+			
+			<!--two formatters, one for ant output, the other for the test files-->
+			<formatter type="plain" usefile="false" />
+			<formatter type="plain" usefile="true" extension="" />
+    	</junit>
+		
+    	<fail message="test failed" if="test.failure" />
+	</target>
+    <target depends="clean" name="cleanall"/>
+    <target name="build" depends="init" >
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" verbose="on" excludes ="**/package-info.java">
+            <src path="${SITE_BUILD_DIR}/src"/>
+            <classpath refid="site.build.classes"/>
+        </javac>
+    </target>
+	
+	<target name="build-jar" depends="build" >
+		<jar description="Jar for Tomcat Deployment" destfile="${SITE_BUILD_DIR}/${JAR_FILE}" basedir="bin" excludes="**/test/*" includes="**/*.class" >
+    		<manifest>
+    			<attribute name="Awesome" value="true"/>
+     			<attribute name="Main-Class" value=""/>
+				<attribute name="Class-Path" value="${site.deploy.classpath}"/>
+			</manifest>
+  		</jar>
+  	</target>
+	
+	  <target name="forcedeploy" depends="build,build-jar,javadoc,build-war,undeploy">
+	   	<mkdir dir="${SITE_BUILD_DIR}/logs"/>
+	  	<copy file="${SITE_BUILD_DIR}/${WAR_FILE}" todir="${TOMEE_APP_DIR}" verbose="on" />
+	  	
+		<exec executable="/bin/date" />
+	  </target>
+		
+	  <target name ="deploy" depends="build,test,javadoc,build-jar,build-war,undeploy">
+	   	<mkdir dir="${SITE_BUILD_DIR}/logs"/>
+	  	<copy file="${SITE_BUILD_DIR}/${WAR_FILE}" todir="${TOMEE_APP_DIR}" verbose="on" />
+
+		<exec executable="/bin/date" />
+	</target>
+	
+</project>
