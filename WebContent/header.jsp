@@ -1,8 +1,8 @@
-<%@ page import="hughes.constants.Constants"%>
+<%@ page import="hughes.site.SiteConfig"%>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 	<HEAD>
-		<TITLE><%= Constants.HELIOS_READABLE_SITE_NAME %> - Helios Data Analysis</TITLE>
+		<TITLE><%= SiteConfig.HELIOS_READABLE_SITE_NAME %> - Helios Data Analysis</TITLE>
 		<META http-equiv=Content-Type content="text/html; charset=utf-8">
 		
 		<link rel="shortcut icon" href="/Framework/images/favicon.ico?v=<%= (1+Math.random())*1000%>" type="image/x-icon">
