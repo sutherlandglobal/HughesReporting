@@ -5,6 +5,7 @@ package hughes.report;
 
 import helios.api.report.frontend.ReportFrontEndGroups;
 import helios.data.Aggregation;
+import helios.data.attributes.DataAttributes;
 import helios.exceptions.ExceptionFormatter;
 import helios.exceptions.ReportSetupException;
 import helios.formatting.NumberFormatter;
@@ -26,10 +27,8 @@ import org.apache.log4j.MDC;
  * @author Jason Diamond
  *
  */
-public final class NetSalesConversion extends Report 
+public final class NetSalesConversion extends Report implements DataAttributes 
 {
-	private final static String SALES_COUNT_ATTR = "salesCount";
-	private final static String CALL_VOL_ATTR = "callVol";
 	private CallVolume callVolumeReport;
 	private NetSalesCount netSalesCountReport;
 	private final static Logger logger = Logger.getLogger(NetSalesConversion.class);

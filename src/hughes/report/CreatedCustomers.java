@@ -4,6 +4,7 @@
 package hughes.report;
 
 import helios.api.report.frontend.ReportFrontEndGroups;
+import helios.data.attributes.DataAttributes;
 import helios.database.connection.SQL.ConnectionFactory;
 import helios.database.connection.SQL.RemoteConnection;
 import helios.exceptions.DatabaseConnectionCreationException;
@@ -13,7 +14,7 @@ import helios.logging.LogIDFactory;
 import helios.report.Report;
 import helios.report.parameters.groups.ReportParameterGroups;
 import helios.report.parameters.validation.TimeIntervalValidator;
-import hughes.constants.Constants;
+import hughes.datasources.DatabaseConfigs;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -27,10 +28,10 @@ import org.apache.log4j.MDC;
  * @author Jason Diamond
  *
  */
-public final class CreatedCustomers extends Report
+public final class CreatedCustomers extends Report implements DataAttributes 
 {
 	private RemoteConnection dbConnection;
-	private final String dbPropFile = Constants.PRIVATE_LABEL_PROD_DB;
+	private final String dbPropFile = DatabaseConfigs.PRIVATE_LABEL_PROD_DB;
 	private LinkedHashMap<String, String> refVals; 
 	private final static Logger logger = Logger.getLogger(CreatedCustomers.class);
 

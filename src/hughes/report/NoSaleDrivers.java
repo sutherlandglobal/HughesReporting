@@ -16,7 +16,7 @@ import helios.logging.LogIDFactory;
 import helios.report.Report;
 import helios.report.parameters.groups.ReportParameterGroups;
 import helios.util.results.Filter;
-import hughes.constants.Constants;
+import hughes.datasources.DatabaseConfigs;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -35,7 +35,7 @@ public class NoSaleDrivers extends Report
 {
 	private RemoteConnection dbConnection;
 	private HughesRoster roster;
-	private final String dbPropFile = Constants.PRIVATE_LABEL_PROD_DB;
+	private final String dbPropFile = DatabaseConfigs.PRIVATE_LABEL_PROD_DB;
 	private final static Logger logger = Logger.getLogger(NoSaleDrivers.class);
 	
 	public static String uiGetReportName()

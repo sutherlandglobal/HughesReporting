@@ -6,6 +6,7 @@ package hughes.report;
 
 import helios.api.report.frontend.ReportFrontEndGroups;
 import helios.data.Aggregation;
+import helios.data.attributes.DataAttributes;
 import helios.data.granularity.user.UserGrains;
 import helios.database.connection.SQL.ConnectionFactory;
 import helios.database.connection.SQL.RemoteConnection;
@@ -17,7 +18,7 @@ import helios.logging.LogIDFactory;
 import helios.report.Report;
 import helios.report.parameters.groups.ReportParameterGroups;
 import helios.statistics.Statistics;
-import hughes.constants.Constants;
+import hughes.datasources.DatabaseConfigs;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -31,12 +32,12 @@ import org.apache.log4j.MDC;
  * @author Jason Diamond
  *
  */
-public final class RealtimeSalesQueue extends Report
+public final class RealtimeSalesQueue extends Report implements DataAttributes 
 {
 	private RemoteConnection dbConnection;
 	private HughesRoster roster;
 
-	private final static String dbPropFile = Constants.PRIVATE_LABEL_PROD_DB;
+	private final static String dbPropFile = DatabaseConfigs.PRIVATE_LABEL_PROD_DB;
 	private final static Logger logger = Logger.getLogger(RealtimeSalesQueue.class);
 	
 

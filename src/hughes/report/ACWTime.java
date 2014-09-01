@@ -5,6 +5,7 @@ package hughes.report;
 
 import helios.api.report.frontend.ReportFrontEndGroups;
 import helios.data.Aggregation;
+import helios.data.attributes.DataAttributes;
 import helios.data.granularity.time.TimeGrains;
 import helios.data.granularity.user.UserGrains;
 import helios.database.connection.SQL.ConnectionFactory;
@@ -18,7 +19,7 @@ import helios.logging.LogIDFactory;
 import helios.report.Report;
 import helios.report.parameters.groups.ReportParameterGroups;
 import helios.statistics.Statistics;
-import hughes.constants.Constants;
+import hughes.datasources.DatabaseConfigs;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -32,12 +33,11 @@ import org.apache.log4j.MDC;
  * @author Jason Diamond
  *
  */
-public final class ACWTime extends Report 
+public final class ACWTime extends Report implements DataAttributes
 {
 	private RemoteConnection dbConnection;
-	private final static String TIME_ATTR = "acwTime";
 	private HughesRoster roster;
-	private final String dbPropFile = Constants.PRIVATE_LABEL_PROD_DB;
+	private final String dbPropFile = DatabaseConfigs.PRIVATE_LABEL_PROD_DB;
 	private final static Logger logger = Logger.getLogger(ACWTime.class);
 
 	public static String uiGetReportName()
@@ -243,8 +243,8 @@ public final class ACWTime extends Report
 				}
 				
 				reportGrainData.addDatum(reportGrain);
-				reportGrainData.getDatum(reportGrain).addAttribute(TIME_ATTR);
-				reportGrainData.getDatum(reportGrain).addData(TIME_ATTR, acwSeconds);
+				reportGrainData.getDatum(reportGrain).addAttribute(ACW_TIME_ATTR);
+				reportGrainData.getDatum(reportGrain).addData(ACW_TIME_ATTR, acwSeconds);
 			}
 		}
 		
@@ -262,7 +262,7 @@ public final class ACWTime extends Report
 		
 		for(String grain : reportGrainData.getDatumIDList())
 		{
-			finalACWTime = Statistics.getTotal(reportGrainData.getDatum(grain).getAttributeData(TIME_ATTR));
+			finalACWTime = Statistics.getTotal(reportGrainData.getDatum(grain).getAttributeData(ACW_TIME_ATTR));
 			
 			//final value in minutes
 			retval.add(new String[]{grain, "" + NumberFormatter.convertToCurrency(finalACWTime/60)});

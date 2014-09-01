@@ -5,6 +5,7 @@ package hughes.report;
 
 import helios.api.report.frontend.ReportFrontEndGroups;
 import helios.data.Aggregation;
+import helios.data.attributes.DataAttributes;
 import helios.exceptions.ExceptionFormatter;
 import helios.exceptions.ReportSetupException;
 import helios.formatting.NumberFormatter;
@@ -27,10 +28,8 @@ import org.apache.log4j.MDC;
  * @author Jason Diamond
  *
  */
-public final class NetRevenue extends Report 
+public final class NetRevenue extends Report implements DataAttributes 
 {
-	private final static String REFUNDS_ATTR = "refunds";
-	private final static String SALES_ATTR = "sales";
 	private RealtimeSales realtimeSalesReport;
 	private RefundTotals refundTotalsReport;
 	private final static Logger logger = Logger.getLogger(NetRevenue.class);
@@ -182,8 +181,8 @@ public final class NetRevenue extends Report
 
 		String reportGrain, saleCount;
 
-		runner.addReport(SALES_ATTR, realtimeSalesReport);
-		runner.addReport(REFUNDS_ATTR, refundTotalsReport);
+		runner.addReport(SALES_AMTS_ATTR, realtimeSalesReport);
+		runner.addReport(TOTAL_REFUNDS_ATTR, refundTotalsReport);
 		
 		if(!runner.runReports())
 		{
@@ -191,7 +190,7 @@ public final class NetRevenue extends Report
 		}
 		else
 		{	
-			for(String[] row : runner.getResults(SALES_ATTR))
+			for(String[] row : runner.getResults(SALES_AMTS_ATTR))
 			{
 				saleCount = row[1];
 			
@@ -199,15 +198,15 @@ public final class NetRevenue extends Report
 				reportGrain = row[0];
 
 				reportGrainData.addDatum(reportGrain);
-				reportGrainData.getDatum(reportGrain).addAttribute(SALES_ATTR);
-				reportGrainData.getDatum(reportGrain).addData(SALES_ATTR, saleCount);
+				reportGrainData.getDatum(reportGrain).addAttribute(SALES_AMTS_ATTR);
+				reportGrainData.getDatum(reportGrain).addData(SALES_AMTS_ATTR, saleCount);
 			}			
 
 			/////////////////
 
 			String orderCount;
 
-			for(String[] row : runner.getResults(REFUNDS_ATTR))
+			for(String[] row : runner.getResults(TOTAL_REFUNDS_ATTR))
 			{
 				orderCount = row[1];
 
@@ -215,8 +214,8 @@ public final class NetRevenue extends Report
 				reportGrain = row[0];
 
 				reportGrainData.addDatum(reportGrain);
-				reportGrainData.getDatum(reportGrain).addAttribute(REFUNDS_ATTR);
-				reportGrainData.getDatum(reportGrain).addData(REFUNDS_ATTR, orderCount);
+				reportGrainData.getDatum(reportGrain).addAttribute(TOTAL_REFUNDS_ATTR);
+				reportGrainData.getDatum(reportGrain).addData(TOTAL_REFUNDS_ATTR, orderCount);
 			}
 		}
 
@@ -230,10 +229,10 @@ public final class NetRevenue extends Report
 			finalSales = 0;
 			finalRefunds = 0;
 
-			if(!reportGrainData.getDatum(grain).addAttribute(SALES_ATTR) && !reportGrainData.getDatum(grain).addAttribute(REFUNDS_ATTR))
+			if(!reportGrainData.getDatum(grain).addAttribute(SALES_AMTS_ATTR) && !reportGrainData.getDatum(grain).addAttribute(TOTAL_REFUNDS_ATTR))
 			{
-				finalSales = Statistics.getTotal(reportGrainData.getDatum(grain).getAttributeData(SALES_ATTR));
-				finalRefunds = Statistics.getTotal(reportGrainData.getDatum(grain).getAttributeData(REFUNDS_ATTR));
+				finalSales = Statistics.getTotal(reportGrainData.getDatum(grain).getAttributeData(SALES_AMTS_ATTR));
+				finalRefunds = Statistics.getTotal(reportGrainData.getDatum(grain).getAttributeData(TOTAL_REFUNDS_ATTR));
 
 				finalRevenue = finalSales - finalRefunds;
 				

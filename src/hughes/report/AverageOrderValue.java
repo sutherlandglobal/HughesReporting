@@ -5,6 +5,7 @@ package hughes.report;
 
 import helios.api.report.frontend.ReportFrontEndGroups;
 import helios.data.Aggregation;
+import helios.data.attributes.DataAttributes;
 import helios.data.granularity.time.TimeGrains;
 import helios.data.granularity.user.UserGrains;
 import helios.database.connection.SQL.ConnectionFactory;
@@ -18,7 +19,7 @@ import helios.logging.LogIDFactory;
 import helios.report.Report;
 import helios.report.parameters.groups.ReportParameterGroups;
 import helios.statistics.Statistics;
-import hughes.constants.Constants;
+import hughes.datasources.DatabaseConfigs;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -32,15 +33,13 @@ import org.apache.log4j.MDC;
  * @author Jason Diamond
  *
  */
-public class AverageOrderValue extends Report 
+public class AverageOrderValue extends Report implements DataAttributes 
 {
 	private RemoteConnection dbConnection;
 	private HughesRoster roster;
-	private final String dbPropFile = Constants.PRIVATE_LABEL_PROD_DB;
+	private final String dbPropFile = DatabaseConfigs.PRIVATE_LABEL_PROD_DB;
 	private final static Logger logger = Logger.getLogger(AverageOrderValue.class);
 	
-	private final static String ORDER_AMTS_ATTR = "orderAmounts";
-
 	public static String uiGetReportName()
 	{
 		return "Average Order Value";
@@ -203,7 +202,7 @@ public class AverageOrderValue extends Report
 
 		Aggregation reportGrainData = new Aggregation();
 
-		String userID, reportGrain, orderAmount, rowDate;
+		String userID, reportGrain, salesAmount, rowDate;
 		
 		int timeGrain, userGrain;
 		
@@ -220,7 +219,7 @@ public class AverageOrderValue extends Report
 			if(roster.hasUser(userID))
 			{
 				rowDate = row[1];
-				orderAmount = row[2];
+				salesAmount = row[2];
 
 				//time grain for time reports
 				if(isTimeTrendReport())
@@ -236,8 +235,8 @@ public class AverageOrderValue extends Report
 				}
 				
 				reportGrainData.addDatum(reportGrain);
-				reportGrainData.getDatum(reportGrain).addAttribute(ORDER_AMTS_ATTR);
-				reportGrainData.getDatum(reportGrain).addData(ORDER_AMTS_ATTR, orderAmount);
+				reportGrainData.getDatum(reportGrain).addAttribute(SALES_AMTS_ATTR);
+				reportGrainData.getDatum(reportGrain).addData(SALES_AMTS_ATTR, salesAmount);
 			}
 		}
 		
@@ -255,7 +254,7 @@ public class AverageOrderValue extends Report
 		
 		for(String grain : reportGrainData.getDatumIDList())
 		{
-			aov = Statistics.getAverage(reportGrainData.getDatum(grain).getAttributeData(ORDER_AMTS_ATTR));
+			aov = Statistics.getAverage(reportGrainData.getDatum(grain).getAttributeData(SALES_AMTS_ATTR));
 
 			retval.add(new String[]{grain, NumberFormatter.convertToCurrency(aov) });
 		}

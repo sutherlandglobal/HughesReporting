@@ -6,6 +6,7 @@ package hughes.report;
 
 import helios.api.report.frontend.ReportFrontEndGroups;
 import helios.data.Aggregation;
+import helios.data.attributes.DataAttributes;
 import helios.data.granularity.time.TimeGrains;
 import helios.data.granularity.user.UserGrains;
 import helios.database.connection.SQL.ConnectionFactory;
@@ -17,7 +18,7 @@ import helios.exceptions.ReportSetupException;
 import helios.logging.LogIDFactory;
 import helios.report.Report;
 import helios.report.parameters.groups.ReportParameterGroups;
-import hughes.constants.Constants;
+import hughes.datasources.DatabaseConfigs;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -31,12 +32,11 @@ import org.apache.log4j.MDC;
  * @author Jason Diamond
  *
  */
-public final class SalesCount extends Report
+public final class SalesCount extends Report implements DataAttributes 
 {
-	private static final String SALES_AMTS_ATTR = "salesAmounts";
 	private RemoteConnection dbConnection;
 	private HughesRoster roster;
-	private final String dbPropFile = Constants.PRIVATE_LABEL_PROD_DB;
+	private final String dbPropFile = DatabaseConfigs.PRIVATE_LABEL_PROD_DB;
 	private final static Logger logger = Logger.getLogger(SalesCount.class);
 
 	public static String uiGetReportName()
@@ -196,8 +196,8 @@ public final class SalesCount extends Report
 				}
 				
 				reportGrainData.addDatum(reportGrain);
-				reportGrainData.getDatum(reportGrain).addAttribute(SALES_AMTS_ATTR);
-				reportGrainData.getDatum(reportGrain).addData(SALES_AMTS_ATTR, salesAmount);
+				reportGrainData.getDatum(reportGrain).addAttribute(SALES_COUNT_ATTR);
+				reportGrainData.getDatum(reportGrain).addData(SALES_COUNT_ATTR, salesAmount);
 			}
 		}
 
@@ -217,9 +217,9 @@ public final class SalesCount extends Report
 		{
 			//not all users will have sales
 			salesCount = 0;
-			if( reportGrainData.getDatum(user).getAttributeData(SALES_AMTS_ATTR) != null)
+			if( reportGrainData.getDatum(user).getAttributeData(SALES_COUNT_ATTR) != null)
 			{
-				salesCount = reportGrainData.getDatum(user).getAttributeData(SALES_AMTS_ATTR).size();
+				salesCount = reportGrainData.getDatum(user).getAttributeData(SALES_COUNT_ATTR).size();
 			}
 
 			retval.add(new String[]{user, "" + salesCount }) ;

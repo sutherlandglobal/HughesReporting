@@ -5,6 +5,7 @@ package hughes.report;
 
 import helios.api.report.frontend.ReportFrontEndGroups;
 import helios.data.Aggregation;
+import helios.data.attributes.DataAttributes;
 import helios.exceptions.ExceptionFormatter;
 import helios.exceptions.ReportSetupException;
 import helios.formatting.NumberFormatter;
@@ -26,10 +27,8 @@ import org.apache.log4j.MDC;
  * @author Jason Diamond
  *
  */
-public final class RevenuePerCall extends Report 
+public final class RevenuePerCall extends Report implements DataAttributes 
 {
-	private final static String SALES_VAL_ATTR = "salesValues";
-	private final static String CALL_VOL_ATTR = "callVol";
 	private CallVolume callVolumeReport;
 	private RealtimeSales realtimeSalesReport;
 	private final static Logger logger = Logger.getLogger(RevenuePerCall.class);
@@ -183,7 +182,7 @@ public final class RevenuePerCall extends Report
 		String reportGrain, numCalls, salesTotal;
 
 		runner.addReport(CALL_VOL_ATTR, callVolumeReport);
-		runner.addReport(SALES_VAL_ATTR, realtimeSalesReport);
+		runner.addReport(SALES_AMTS_ATTR, realtimeSalesReport);
 		
 		if(!runner.runReports())
 		{
@@ -203,14 +202,14 @@ public final class RevenuePerCall extends Report
 
 			/////////////////
 
-			for(String[] row : runner.getResults(SALES_VAL_ATTR))
+			for(String[] row : runner.getResults(SALES_AMTS_ATTR))
 			{
 				salesTotal = row[1];
 				reportGrain = row[0];
 
 				reportGrainData.addDatum(reportGrain);
-				reportGrainData.getDatum(reportGrain).addAttribute(SALES_VAL_ATTR);
-				reportGrainData.getDatum(reportGrain).addData(SALES_VAL_ATTR, salesTotal);
+				reportGrainData.getDatum(reportGrain).addAttribute(SALES_AMTS_ATTR);
+				reportGrainData.getDatum(reportGrain).addData(SALES_AMTS_ATTR, salesTotal);
 			}
 		}
 
@@ -224,10 +223,10 @@ public final class RevenuePerCall extends Report
 			finalNumCalls = 0;
 			finalSalesVal = 0;
 
-			if(!reportGrainData.getDatum(grain).addAttribute(CALL_VOL_ATTR) && !reportGrainData.getDatum(grain).addAttribute(SALES_VAL_ATTR))
+			if(!reportGrainData.getDatum(grain).addAttribute(CALL_VOL_ATTR) && !reportGrainData.getDatum(grain).addAttribute(SALES_AMTS_ATTR))
 			{
 				finalNumCalls = Statistics.getTotal(reportGrainData.getDatum(grain).getAttributeData(CALL_VOL_ATTR));
-				finalSalesVal = Statistics.getTotal(reportGrainData.getDatum(grain).getAttributeData(SALES_VAL_ATTR));
+				finalSalesVal = Statistics.getTotal(reportGrainData.getDatum(grain).getAttributeData(SALES_AMTS_ATTR));
 
 				if(finalNumCalls != 0)
 				{

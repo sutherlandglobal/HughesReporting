@@ -14,7 +14,7 @@ import helios.logging.LogIDFactory;
 import helios.report.parameters.groups.ReportParameterGroups;
 import helios.roster.Roster;
 import helios.schedule.Scheduling;
-import hughes.constants.Constants;
+import hughes.datasources.DatabaseConfigs;
 import hughes.report.roster.Attributes;
 
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ import org.apache.log4j.MDC;
  */
 public final class HughesRoster extends Roster implements Attributes, Scheduling
 {
-	private final String dbPropFile = Constants.PRIVATE_LABEL_PROD_DB;
+	private final String dbPropFile = DatabaseConfigs.PRIVATE_LABEL_PROD_DB;
 	private final static String PROGRAM_NAME = "Hughes";
 	private final static String ORGUNIT_NAME = "NATS";
 	

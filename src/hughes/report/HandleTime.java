@@ -5,6 +5,7 @@ package hughes.report;
 
 import helios.api.report.frontend.ReportFrontEndGroups;
 import helios.data.Aggregation;
+import helios.data.attributes.DataAttributes;
 import helios.exceptions.ExceptionFormatter;
 import helios.exceptions.ReportSetupException;
 import helios.formatting.NumberFormatter;
@@ -26,11 +27,8 @@ import org.apache.log4j.MDC;
  * @author Jason Diamond
  *
  */
-public final class HandleTime extends Report 
+public final class HandleTime extends Report implements DataAttributes 
 {
-	private final static String TALK_TIME_ATTR = "talkTime";
-	private final static String ACW_TIME_ATTR = "acwTime";
-
 	private TalkTime talkTimeReport;
 	private ACWTime acwTimeReport;
 	private final static Logger logger = Logger.getLogger(HandleTime.class);

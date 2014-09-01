@@ -5,19 +5,15 @@ package hughes.report;
 
 import helios.api.report.frontend.ReportFrontEndGroups;
 import helios.data.Aggregation;
-import helios.data.granularity.time.TimeGrains;
-import helios.data.granularity.user.UserGrains;
-import helios.database.connection.SQL.ConnectionFactory;
-import helios.database.connection.SQL.RemoteConnection;
-import helios.date.parsing.DateParser;
-import helios.exceptions.DatabaseConnectionCreationException;
+import helios.data.attributes.DataAttributes;
 import helios.exceptions.ExceptionFormatter;
 import helios.exceptions.ReportSetupException;
+import helios.formatting.NumberFormatter;
 import helios.logging.LogIDFactory;
 import helios.report.Report;
+import helios.report.ReportRunner;
 import helios.report.parameters.groups.ReportParameterGroups;
 import helios.statistics.Statistics;
-import hughes.constants.Constants;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -31,12 +27,10 @@ import org.apache.log4j.MDC;
  * @author Jason Diamond
  *
  */
-public final class AverageACWTime extends Report 
+public final class AverageACWTime extends Report implements DataAttributes
 {
-	private RemoteConnection dbConnection;
-	private final static String TIME_ATTR = "callTime";
-	private HughesRoster roster;
-	private final String dbPropFile = Constants.PRIVATE_LABEL_PROD_DB;
+	private CallVolume callVolumeReport;
+	private ACWTime acwTimeReport;
 	private final static Logger logger = Logger.getLogger(AverageACWTime.class);
 
 	public static String uiGetReportName()
@@ -46,7 +40,7 @@ public final class AverageACWTime extends Report
 	
 	public static String uiGetReportDesc()
 	{
-		return "Average ACW Time in minutes.";
+		return ".";
 	}
 	
 	public final static LinkedHashMap<String, String> uiSupportedReportFrontEnds = ReportFrontEndGroups.BASIC_METRIC_FRONTENDS;
@@ -72,7 +66,7 @@ public final class AverageACWTime extends Report
 		boolean retval = false;
 
 		try
-		{			
+		{
 			reportName = AverageACWTime.uiGetReportName();
 			reportDesc = AverageACWTime.uiGetReportDesc();
 			
@@ -116,32 +110,7 @@ public final class AverageACWTime extends Report
 	@Override
 	protected boolean setupDataSourceConnections()
 	{
-		boolean retval = false;
-		
-		try 
-		{
-			ConnectionFactory factory = new ConnectionFactory();
-			
-			factory.load(dbPropFile);
-			
-			dbConnection = factory.getConnection();
-		}
-		catch(DatabaseConnectionCreationException e )
-		{
-			setErrorMessage("DatabaseConnectionCreationException on attempt to access database");
-					
-			logErrorMessage( getErrorMessage());
-			logErrorMessage( ExceptionFormatter.asString(e));
-		}
-		finally
-		{
-			if(dbConnection != null)
-			{
-				retval = true;
-			}
-		}
-
-		return retval;
+		return true;
 	}
 
 	/* (non-Javadoc)
@@ -149,15 +118,15 @@ public final class AverageACWTime extends Report
 	 */
 	@Override
 	public void close()
-	{
-		if(dbConnection != null)
+	{		
+		if(callVolumeReport != null)
 		{
-			dbConnection.close();
+			callVolumeReport.close();
 		}
-
-		if(roster != null)
+		
+		if(acwTimeReport != null)
 		{
-			roster.close();
+			acwTimeReport.close();
 		}
 
 		super.close();
@@ -182,7 +151,7 @@ public final class AverageACWTime extends Report
 			retval.add("User Grain");
 		}
 		
-		retval.add("Minutes");
+		retval.add("Average ACW Time (Minutes)");
 		
 		return retval;
 	}
@@ -191,81 +160,74 @@ public final class AverageACWTime extends Report
 	 * @see helios.Report#runReport()
 	 */
 	@Override
-	protected ArrayList<String[]> runReport() throws Exception
-	{		
-		ArrayList<String[]> retval = null;
+	protected ArrayList<String[]> runReport() throws ReportSetupException
+	{
+		//#calls fielded vs # orders made
 		
-		String query = "SELECT CRM_MST_USER.USER_USERID,tbl_PFS_CMS_Hagent.row_date,acwtime " + 
-				"FROM tbl_PFS_CMS_Hagent INNER JOIN CRM_MST_USER ON tbl_PFS_CMS_Hagent.logid = CRM_MST_USER.USER_EXTENSION " +
-				"WHERE tbl_PFS_CMS_Hagent.row_date >= '" +  
-				getParameters().getStartDate() + 
-				"' AND tbl_PFS_CMS_Hagent.row_date <= '" +   
-				getParameters().getEndDate() + 
-				"'" ;
+		ArrayList<String[]> retval = null; 
 		
-		//required
-		query += " GROUP BY CRM_MST_USER.USER_USERID,tbl_PFS_CMS_Hagent.row_date, tbl_PFS_CMS_Hagent.split ";
-		
+		ReportRunner runner = new ReportRunner();
+
+		acwTimeReport = new ACWTime();
+		acwTimeReport.setChildReport(true);
+		acwTimeReport.setParameters(getParameters());
+
+		callVolumeReport = new CallVolume();
+		callVolumeReport.setChildReport(true);
+		callVolumeReport.setParameters(getParameters());
+
 		Aggregation reportGrainData = new Aggregation();
+		String reportGrain;
 
-		String userID, reportGrain, numCalls, rowDate;
+		runner.addReport(CALL_VOL_ATTR, callVolumeReport);
+		runner.addReport(ACW_TIME_ATTR, acwTimeReport);
 		
-		int timeGrain, userGrain;
-		
-		roster = new HughesRoster();
-		roster.setChildReport(true);
-		roster.getParameters().setAgentNames(getParameters().getAgentNames());
-		roster.getParameters().setTeamNames(getParameters().getTeamNames());
-		roster.load();
-		
-		for(String[] row:  dbConnection.runQuery(query))
+		if(!runner.runReports())
 		{
-			userID = row[0];
-
-			
-			if(roster.hasUser(userID))
+			throw new ReportSetupException("Running reports failed");
+		}
+		else
+		{	
+			for(String[] row : runner.getResults(CALL_VOL_ATTR))
 			{
-				rowDate = row[1];
-				numCalls = row[2];
+				reportGrain = row[0];
 
-				//time grain for time reports
-				if(isTimeTrendReport())
-				{
-					timeGrain = Integer.parseInt(getParameters().getTimeGrain());
-					reportGrain = TimeGrains.getDateGrain(timeGrain, DateParser.convertSQLDateToGregorian(rowDate));
-				}
-				else //if(isStackReport())
-				{
-					//is stack report
-					userGrain = Integer.parseInt(getParameters().getUserGrain());
-					reportGrain = UserGrains.getUserGrain(userGrain, roster.getUser(userID));
-				}
+				reportGrainData.addDatum(reportGrain);
+				reportGrainData.getDatum(reportGrain).addAttribute(CALL_VOL_ATTR );
+				reportGrainData.getDatum(reportGrain).addData(CALL_VOL_ATTR, row[1]);
+			}			
+
+			/////////////////
+
+			for(String[] row : runner.getResults(ACW_TIME_ATTR))
+			{
+				reportGrain = row[0];
 				
 				reportGrainData.addDatum(reportGrain);
-				reportGrainData.getDatum(reportGrain).addAttribute(TIME_ATTR);
-				reportGrainData.getDatum(reportGrain).addData(TIME_ATTR, numCalls);
+				reportGrainData.getDatum(reportGrain).addAttribute(ACW_TIME_ATTR );
+				reportGrainData.getDatum(reportGrain).addData(ACW_TIME_ATTR, row[1]);
 			}
 		}
-		
-		for( Entry<String, String> queryStats  : dbConnection.getStatistics().entrySet())
-		{
-			logInfoMessage( "Query " + queryStats.getKey() + ": " + queryStats.getValue());
-		}
-		
-		/////////////////
-		//processing the buckets
 
-		double finalNumCalls;
+		retval = new ArrayList<String[]>();
 		
-		retval = new ArrayList<String[]>(reportGrainData.getSize());
+		double finalNumCalls, finalNumOrders, finalConversion;
 		
-		for(String grain : reportGrainData.getDatumIDList())
-		{
-			finalNumCalls = Statistics.getAverage(reportGrainData.getDatum(grain).getAttributeData(TIME_ATTR));
 
-			retval.add(new String[]{grain, "" + finalNumCalls});
+		for(String datumID : reportGrainData.getDatumIDList())
+		{
+			finalConversion = 0;
+			finalNumCalls = Statistics.getTotal(reportGrainData.getDatum(datumID).getAttributeData(CALL_VOL_ATTR));
+			finalNumOrders = Statistics.getTotal(reportGrainData.getDatum(datumID).getAttributeData(ACW_TIME_ATTR));
+			
+			if(finalNumCalls != 0)
+			{
+				finalConversion = finalNumOrders/finalNumCalls;
+			}
+
+			retval.add(new String[]{datumID, "" + NumberFormatter.convertToPercentage(finalConversion, 4) }) ;
 		}
-		
+
 		return retval;
 	}
 	

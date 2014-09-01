@@ -6,6 +6,7 @@ package hughes.report;
 
 import helios.api.report.frontend.ReportFrontEndGroups;
 import helios.data.Aggregation;
+import helios.data.attributes.DataAttributes;
 import helios.data.granularity.time.TimeGrains;
 import helios.data.granularity.user.UserGrains;
 import helios.database.connection.SQL.ConnectionFactory;
@@ -17,7 +18,7 @@ import helios.exceptions.ReportSetupException;
 import helios.logging.LogIDFactory;
 import helios.report.Report;
 import helios.report.parameters.groups.ReportParameterGroups;
-import hughes.constants.Constants;
+import hughes.datasources.DatabaseConfigs;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -32,12 +33,11 @@ import org.apache.log4j.MDC;
  * @author Jason Diamond
  *
  */
-public class RefundCount extends Report
+public class RefundCount extends Report implements DataAttributes 
 {
-	private static final String REFUNDS_AMTS_ATTR = "refundAmounts";
 	private RemoteConnection dbConnection;
 	private HughesRoster roster;
-	private final String dbPropFile = Constants.PRIVATE_LABEL_PROD_DB;
+	private final String dbPropFile = DatabaseConfigs.PRIVATE_LABEL_PROD_DB;
 	private final static Logger logger = Logger.getLogger(RefundCount.class);
 
 	public static String uiGetReportName()
@@ -198,8 +198,8 @@ public class RefundCount extends Report
 				}
 				
 				reportGrainData.addDatum(reportGrain);
-				reportGrainData.getDatum(reportGrain).addAttribute(REFUNDS_AMTS_ATTR);
-				reportGrainData.getDatum(reportGrain).addData(REFUNDS_AMTS_ATTR, openedCaseID);
+				reportGrainData.getDatum(reportGrain).addAttribute(REFUND_COUNT_ATTR);
+				reportGrainData.getDatum(reportGrain).addData(REFUND_COUNT_ATTR, openedCaseID);
 			}
 		}
 		
@@ -217,7 +217,7 @@ public class RefundCount extends Report
 		
 		for(String grain : reportGrainData.getDatumIDList())
 		{
-			numRefunds = reportGrainData.getDatum(grain).getAttributeData(REFUNDS_AMTS_ATTR).size();
+			numRefunds = reportGrainData.getDatum(grain).getAttributeData(REFUND_COUNT_ATTR).size();
 
 			retval.add(new String[]{grain, "" + numRefunds });
 		}

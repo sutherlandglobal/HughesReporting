@@ -5,6 +5,7 @@ package hughes.report;
 
 import helios.api.report.frontend.ReportFrontEndGroups;
 import helios.data.Aggregation;
+import helios.data.attributes.DataAttributes;
 import helios.exceptions.ExceptionFormatter;
 import helios.exceptions.ReportSetupException;
 import helios.formatting.NumberFormatter;
@@ -26,22 +27,20 @@ import org.apache.log4j.MDC;
  * @author Jason Diamond
  *
  */
-public final class AverageHandleTime extends Report 
+public final class AverageHandleTime extends Report implements DataAttributes 
 {
-	private final static String SALES_COUNT_ATTR = "salesCount";
-	private final static String CALL_VOL_ATTR = "callVol";
 	private CallVolume callVolumeReport;
-	private SalesCount salesCountReport;
+	private HandleTime handleTimeReport;
 	private final static Logger logger = Logger.getLogger(AverageHandleTime.class);
 
 	public static String uiGetReportName()
 	{
-		return "Conversion";
+		return "Average Handle Time";
 	}
 	
 	public static String uiGetReportDesc()
 	{
-		return "Percentage of calls where a sale has occured.";
+		return "Average Handle Time.";
 	}
 	
 	public final static LinkedHashMap<String, String> uiSupportedReportFrontEnds = ReportFrontEndGroups.BASIC_METRIC_FRONTENDS;
@@ -125,9 +124,9 @@ public final class AverageHandleTime extends Report
 			callVolumeReport.close();
 		}
 		
-		if(salesCountReport != null)
+		if(handleTimeReport != null)
 		{
-			salesCountReport.close();
+			handleTimeReport.close();
 		}
 
 		super.close();
@@ -152,7 +151,7 @@ public final class AverageHandleTime extends Report
 			retval.add("User Grain");
 		}
 		
-		retval.add("Conversion (%)");
+		retval.add("Average Handle Time (Minutes)");
 		
 		return retval;
 	}
@@ -168,10 +167,10 @@ public final class AverageHandleTime extends Report
 		ArrayList<String[]> retval = null; 
 		
 		ReportRunner runner = new ReportRunner();
-
-		salesCountReport = new SalesCount();
-		salesCountReport.setChildReport(true);
-		salesCountReport.setParameters(getParameters());
+		
+		handleTimeReport = new HandleTime();
+		handleTimeReport.setChildReport(true);
+		handleTimeReport.setParameters(getParameters());
 
 		callVolumeReport = new CallVolume();
 		callVolumeReport.setChildReport(true);
@@ -181,7 +180,7 @@ public final class AverageHandleTime extends Report
 		String reportGrain;
 
 		runner.addReport(CALL_VOL_ATTR, callVolumeReport);
-		runner.addReport(SALES_COUNT_ATTR, salesCountReport);
+		runner.addReport(HANDLE_TIME_ATTR, handleTimeReport);
 		
 		if(!runner.runReports())
 		{
@@ -198,35 +197,33 @@ public final class AverageHandleTime extends Report
 				reportGrainData.getDatum(reportGrain).addData(CALL_VOL_ATTR, row[1]);
 			}			
 
-			/////////////////
-
-			for(String[] row : runner.getResults(SALES_COUNT_ATTR))
+			for(String[] row : runner.getResults(HANDLE_TIME_ATTR))
 			{
 				reportGrain = row[0];
 				
 				reportGrainData.addDatum(reportGrain);
-				reportGrainData.getDatum(reportGrain).addAttribute(SALES_COUNT_ATTR );
-				reportGrainData.getDatum(reportGrain).addData(SALES_COUNT_ATTR, row[1]);
+				reportGrainData.getDatum(reportGrain).addAttribute(HANDLE_TIME_ATTR );
+				reportGrainData.getDatum(reportGrain).addData(HANDLE_TIME_ATTR, row[1]);
 			}
 		}
 
 		retval = new ArrayList<String[]>();
 		
-		double finalNumCalls, finalNumOrders, finalConversion;
+		double finalNumCalls, finalHandleTime, finalAHT;
 		
 
 		for(String datumID : reportGrainData.getDatumIDList())
 		{
-			finalConversion = 0;
+			finalAHT = 0;
 			finalNumCalls = Statistics.getTotal(reportGrainData.getDatum(datumID).getAttributeData(CALL_VOL_ATTR));
-			finalNumOrders = Statistics.getTotal(reportGrainData.getDatum(datumID).getAttributeData(SALES_COUNT_ATTR));
+			finalHandleTime = Statistics.getTotal(reportGrainData.getDatum(datumID).getAttributeData(HANDLE_TIME_ATTR));
 			
 			if(finalNumCalls != 0)
 			{
-				finalConversion = finalNumOrders/finalNumCalls;
+				finalAHT = finalHandleTime/finalNumCalls;
 			}
 
-			retval.add(new String[]{datumID, "" + NumberFormatter.convertToPercentage(finalConversion, 4) }) ;
+			retval.add(new String[]{datumID, "" + NumberFormatter.convertToCurrency(finalAHT) }) ;
 		}
 
 		return retval;
