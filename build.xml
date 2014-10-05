@@ -13,7 +13,6 @@
 		<pathelement location="${SITE_DIR}/WEB-INF/classes"/>
 		<pathelement location="${SITE_LIB}/jtds-1.2.5.jar"/>
     	<pathelement location="${SITE_LIB}/Helios.jar"/>
-    	<pathelement location="${SITE_LIB}/junit4.jar"/>
     	<pathelement location="${SITE_LIB}/jdom-2.0.5.jar"/>
 		<pathelement location="${SITE_LIB}/jcommon-1.0.21.jar" />
     	<pathelement location="${SITE_LIB}/jfreechart-1.0.17.jar"/>
@@ -30,17 +29,13 @@
 	<path id="site.build.junit.classes">
 		<pathelement location="${SITE_DIR}/bin"/>
 		<pathelement location="${SITE_DIR}/WEB-INF/classes"/>
-		<pathelement location="${JAVA_SHARE_DIR}/junit.jar"/>
 		<pathelement location="${SITE_LIB}/jtds-1.2.5.jar"/>
     	<pathelement location="${SITE_LIB}/Helios.jar"/>
-    	<pathelement location="${SITE_LIB}/junit4.jar"/>
     	<pathelement location="${SITE_LIB}/jdom-2.0.5.jar"/>
 		<pathelement location="${SITE_LIB}/jcommon-1.0.21.jar" />
     	<pathelement location="${SITE_LIB}/jfreechart-1.0.17.jar"/>
         <pathelement location="${SITE_LIB}/log4j-1.2.17.jar"/>
         <pathelement location="${SITE_LIB}/servlet-api-2.5.jar"/>
-    	<pathelement location="${SITE_LIB}/commons-collections3.jar"/>
-    	<pathelement location="${SITE_LIB}/commons-lang.jar"/>
 	</path>
 	<pathconvert property="site.build.junit.classpath" pathsep=" ">
    	 	<path refid="site.build.junit.classes" />
@@ -54,8 +49,6 @@
 		<pathelement location="${WEB_APP_DIR}/WEB-INF/lib/jcommon-1.0.21.jar" />
     	<pathelement location="${WEB_APP_DIR}/WEB-INF/lib/jfreechart-1.0.17.jar"/>
         <pathelement location="${WEB_APP_DIR}/WEB-INF/lib/log4j-1.2.17.jar"/>
-    	<pathelement location="${WEB_APP_DIR}/WEB-INF/lib/commons-collections3.jar"/>
-    	<pathelement location="${WEB_APP_DIR}/WEB-INF/lib/commons-lang.jar"/>
         <pathelement location="${TOMEE_HOME}/lib/servlet-api.jar"/>
     </path>
 	<pathconvert property="site.deploy.classpath" pathsep=" ">
@@ -69,7 +62,6 @@
     <echo message="App Home: ${SITE_DIR}"/>
      <echo message="App Jar Dir: ${SITE_LIB}"/>
      <echo message="App Deploy Dir: ${TOMEE_APP_DIR}"/>
-     <echo message="Java Share Dir: ${JAVA_SHARE_DIR}"/>
    	 <echo message="Target Version: ${target}"/>
      <echo message="Source Version: ${source}"/>
      
@@ -77,8 +69,8 @@
     	<echoproperties />
 	</target>
     <target name="init">
-        <mkdir dir="${SITE_DIR}/bin"/>
-        <copy includeemptydirs="false" todir="${SITE_DIR}/bin">
+        <mkdir dir="${SITE_DIR}/bin" />
+        <copy includeemptydirs="false" todir="${SITE_DIR}/bin" verbose="on">
             <fileset dir="${SITE_SRC_DIR}">
                 <exclude name="**/*.java"/>
             </fileset>
@@ -97,22 +89,72 @@
     </target>
 	
 	<target name ="build-war" depends="build-jar">
-		<mkdir dir="${SITE_CLASS_DIR}"/>
-		<mkdir dir="${SITE_CLASS_DIR}/${SITE_CLASS_PREFIX}"/>
-		<mkdir dir="${SITE_CLASS_DIR}/${SITE_CLASS_PREFIX}/api"/>
+		<!-- assume sourcegen was successful, which creates everything under /build -->
 		
-        <copy includeemptydirs="false" todir="${SITE_CLASS_DIR}/${SITE_CLASS_PREFIX}/api" verbose ="on">
-            <fileset dir="${SITE_DIR}/bin/${SITE_CLASS_PREFIX}/api">
+		<!-- load helios common resources into  ${SITE_BUILD_DIR}/ui -->
+		<mkdir dir="${SITE_BUILD_DIR}/webapp/WebContent"/>
+		<mkdir dir="${SITE_BUILD_DIR}/webapp/WebContent/js"/>
+		<mkdir dir="${SITE_BUILD_DIR}/webapp/WebContent/css"/>
+		<mkdir dir="${SITE_BUILD_DIR}/webapp/WebContent/images"/>
+		
+		<unzip src="${SITE_LIB}/Helios.jar" dest="${SITE_BUILD_DIR}/webapp/WebContent/images" >
+		    <patternset>
+		        <include name="resources/images/*"/>
+		    </patternset>
+		    <mapper type="flatten"/>
+		</unzip>
+		
+		<unzip src="${SITE_LIB}/Helios.jar" dest="${SITE_BUILD_DIR}/webapp/WebContent/js" >
+		    <patternset>
+		        <include name="resources/js/*"/>
+		    </patternset>
+		    <mapper type="flatten"/>
+		</unzip>
+		
+		<unzip src="${SITE_LIB}/Helios.jar" dest="${SITE_BUILD_DIR}/webapp/WebContent/css" >
+		    <patternset>
+		        <include name="resources/site/css/*"/>
+		    </patternset>
+		    <mapper type="flatten"/>
+		</unzip>
+		
+		<unzip src="${SITE_LIB}/Helios.jar" dest="${SITE_BUILD_DIR}/webapp/WebContent" >
+		    <patternset>
+		        <include name="resources/site/jsp/*"/>
+		    </patternset>
+		    <mapper type="flatten"/>
+		</unzip>
+		
+		<unzip src="${SITE_LIB}/Helios.jar" dest="${SITE_BUILD_DIR}/webapp/WebContent" >
+		    <patternset>
+		        <include name="resources/jsp/*"/>
+		    </patternset>
+		    <mapper type="flatten"/>
+		</unzip>
+		
+        <copy includeemptydirs="false" todir="${SITE_BUILD_DIR}/webapp/WEB-INF/classes" verbose ="on">
+            <fileset dir="${SITE_DIR}/bin/">
                 <exclude name="**/package-info.java"/>
             	<exclude name="**/test/**"/>
+            	<exclude name="**/report/**"/>
+            	<exclude name="**/datasources/**"/>
+            </fileset>
+         </copy>
+		
+		<!-- load site banner into ui images dir-->
+		<copy file="${SITE_LOGO}" todir ="${SITE_BUILD_DIR}/webapp/WebContent/images" verbose="on"/>
+		
+		<copy includeemptydirs="false" todir="${SITE_BUILD_DIR}/webapp/WEB-INF/lib" verbose ="on">
+            <fileset dir="${SITE_DIR}/lib">
+		   		<exclude name="servlet-api*jar"/>
             </fileset>
         </copy>
 		
-		<copy file="${SITE_DIR}/${JAR_FILE}" todir ="${SITE_DIR}/WEB-INF/lib" verbose="on"/>
+		<copy file="${SITE_DIR}/${JAR_FILE}" todir ="${SITE_BUILD_DIR}/webapp/WEB-INF/lib" verbose="on"/>
 		
-		<war destfile="${WAR_FILE}" webxml="${SITE_DIR}/WEB-INF/WEB.xml" >
+		<war destfile="${WAR_FILE}" webxml="${SITE_BUILD_DIR}/webapp/WEB-INF/WEB.xml" >
 
-	   		<fileset dir="${SITE_DIR}/WebContent">
+	   		<fileset dir="${SITE_BUILD_DIR}/webapp/WebContent">
 	      		<include name="**/*"/>
 	   		</fileset>
 			
@@ -120,16 +162,17 @@
 			<fileset dir="${SITE_DIR}" includes="doc/**"/>
 			<fileset dir="${SITE_DIR}" includes="test/**"/>
 			
-		   	<lib dir="${SITE_DIR}/WEB-INF/lib">
-		   		<exclude name="servlet-api*jar"/>
-		   	</lib>
-		  	<classes dir="${SITE_DIR}/WEB-INF/classes"/>
+		   	<lib dir="${SITE_BUILD_DIR}/webapp/WEB-INF/lib"/>
+			
+		  	<classes dir="${SITE_BUILD_DIR}/webapp/WEB-INF/classes"/>
 		</war>
 	</target>
 	
 	<target name="undeploy">
 		<delete file="${TOMEE_APP_DIR}/${WAR_FILE}"/>
 		<delete dir="${WEB_APP_DIR}"/>
+		
+	  	<sleep seconds="5"/>
 	</target>
 	
 	  <target name="javadoc" depends="build">
@@ -140,17 +183,18 @@
 				<classpath refid="site.build.classes"/>
     	
 	        	<fileset dir="${SITE_SRC_DIR}" defaultexcludes="yes">
-	        	  <exclude name="**/test/**"/>
+	        	  	<exclude name="**/test/**"/>
 	        	</fileset>
 	        	
-	        	<fileset dir="${SITE_BUILD_DIR}" defaultexcludes="yes">
-	        	  <exclude name="**/test/**"/>
+	        	<fileset dir="${SITE_BUILD_DIR}/" defaultexcludes="yes">
+	        	  	<exclude name="**/test/**"/>
+	        		<exclude name="**/webapp/**"/>
 	        	</fileset>
 	        	
 				<link href="http://download.oracle.com/javase/7/docs/api/"/>
 	        	<link href="http://www.jfree.org/jfreechart/api/javadoc/"/>
 	        	<link href="http://logging.apache.org/log4j/2.x/log4j-api/apidocs/"/>
-	        	<link href="https://tomcat.apache.org/tomcat-7.0-doc/servletapi/"/>
+	        	<link href="http://tomcat.apache.org/tomcat-7.0-doc/servletapi/"/>
 			</javadoc>
 	  </target>
 	<target name="test" depends="build,build-jar">
@@ -170,29 +214,19 @@
     <target depends="clean" name="cleanall"/>
     
 	<target name="sourcegen" depends="init">
-		
-    	<!-- code generation here -->
-    	
-    	<!-- generate site config java class from build.properties, put code in sitename.site.siteconfig-->
 		<mkdir dir="${SITE_BUILD_DIR}/"/>
-		<mkdir dir="${SITE_BUILD_DIR}/${SITE_CLASS_PREFIX}/site/"/>
-		<mkdir dir="${SITE_BUILD_DIR}/${SITE_CLASS_PREFIX}/api/"/>
-		<mkdir dir="${SITE_BUILD_DIR}/${SITE_CLASS_PREFIX}/logging/"/>
-		<mkdir dir="${SITE_CLASS_DIR}"/>
+		<mkdir dir="${SITE_BUILD_DIR}/webapp"/>
+		<mkdir dir="${SITE_BUILD_DIR}/webapp/WEB-INF"/>
+		<mkdir dir="${SITE_BUILD_DIR}/webapp/WEB-INF/lib"/>
+		<mkdir dir="${SITE_BUILD_DIR}/webapp/WEB-INF/classes"/>
+		<mkdir dir="${SITE_BUILD_DIR}/webapp/WebContent"/>		
+
 		
-    	<java classname="helios.site.codegen.SiteCodeGenerator" >
+		<!-- launch velocity codegen--> 	
+    	<java classname="com.sutherland.helios.site.codegen.SiteCodeGenerator" >
     		<classpath refid="site.build.classes"/>
     		<arg value="build.properties"/>
-    	</java>
-		
-    	<!-- generate servlets, put code in sitename.api -->
-		<!--
-    	<java classname="helios.api.generation.ServletGenerator" >
-    		<classpath refid="site.build.classes"/>
-    	</java>
-    	-->
-    	<!-- generate log4.properties, put config in web-inf/classes-->
-		
+    	</java>		
 	</target>
 	
 	<target name="build" depends="sourcegen" >
@@ -218,16 +252,8 @@
 			</manifest>
   		</jar>
   	</target>
-	
-	  <target name="forcedeploy" depends="build,build-jar,javadoc,build-war,undeploy">
-	   	<mkdir dir="${SITE_DIR}/logs"/>
-	  	<copy file="${SITE_DIR}/${WAR_FILE}" todir="${TOMEE_APP_DIR}" verbose="on" />
-	  	
-	  	<sleep seconds="5"/>
-		<exec executable="/bin/date" />
-	  </target>
 		
-	  <target name ="deploy" depends="build,build-jar,build-war,undeploy">
+	  <target name ="deploy" depends="build,build-jar,javadoc,build-war,undeploy">
 	   	<mkdir dir="${SITE_DIR}/logs"/>
 	  	<copy file="${SITE_DIR}/${WAR_FILE}" todir="${TOMEE_APP_DIR}" verbose="on" />
 
@@ -235,7 +261,7 @@
 		<exec executable="/bin/date" />
 	</target>
 	
-	<target name="nuke" depends="clean">
+	<target name="nuke">
 		<delete dir="${SITE_SRC_DIR}"/>
 	</target>
 </project>
