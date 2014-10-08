@@ -15,6 +15,7 @@ import com.sutherland.helios.api.report.frontend.ReportFrontEndGroups;
 import com.sutherland.helios.data.attributes.DataAttributes;
 import com.sutherland.helios.database.connection.SQL.ConnectionFactory;
 import com.sutherland.helios.database.connection.SQL.RemoteConnection;
+import com.sutherland.helios.date.parsing.DateParser;
 import com.sutherland.helios.exceptions.DatabaseConnectionCreationException;
 import com.sutherland.helios.exceptions.ExceptionFormatter;
 import com.sutherland.helios.exceptions.ReportSetupException;
@@ -193,10 +194,15 @@ public final class CreatedCustomers extends Report implements DataAttributes
 		
 		retval = new ArrayList<String[]>();
 		
+		int dateFormat;
+
+		dateFormat = Integer.parseInt(getParameters().getDateFormat());
+		
 		String creationDate, customerType, san, promoCode, marketingCallReason, l1Center, reasonForNoSale;
 		for(String[] row:  dbConnection.runQuery(query))
 		{
-			creationDate = row[0];
+			creationDate = DateParser.convertToString(DateParser.convertSQLDateToGregorian(row[0]), dateFormat );	
+			
 			san = row[2];
 			promoCode = row[3];
 			
