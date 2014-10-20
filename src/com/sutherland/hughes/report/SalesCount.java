@@ -158,7 +158,7 @@ public final class SalesCount extends Report implements DataAttributes
 				" FROM CRM_MST_USER INNER JOIN CRM_TRN_ORDERDETAILS ON CRM_MST_USER.USER_USERID = CRM_TRN_ORDERDETAILS.ORDDET_CREATEDBY " + 
 				" WHERE CRM_TRN_ORDERDETAILS.ORDDET_CREATEDDATE >= '" + 
 				getParameters().getStartDate() + 
-				"' AND CRM_TRN_ORDERDETAILS.ORDDET_CREATEDDATE <= '" + 
+				"' AND CRM_TRN_ORDERDETAILS.ORDDET_CREATEDDATE < '" + 
 				getParameters().getEndDate() + 
 				"' ";
 

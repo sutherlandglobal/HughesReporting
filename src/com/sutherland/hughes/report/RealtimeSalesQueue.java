@@ -165,7 +165,7 @@ public final class RealtimeSalesQueue extends Report implements DataAttributes
 				" CRM_TRN_ORDER inner join CRM_TRN_ORDERDETAILS on CRM_TRN_ORDER.ORDER_ORDERID = CRM_TRN_ORDERDETAILS.ORDDET_ORDERID "+
 				" WHERE CRM_TRN_ORDER.ORDER_CREATEDDATE >= '" + 
 				getParameters().getStartDate() +
-				"' AND CRM_TRN_ORDER.ORDER_CREATEDDATE <= '" + 
+				"' AND CRM_TRN_ORDER.ORDER_CREATEDDATE < '" + 
 				getParameters().getEndDate() + 
 				"' "; 
 		

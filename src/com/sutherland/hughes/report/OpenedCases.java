@@ -158,7 +158,7 @@ public final class OpenedCases extends Report implements DataAttributes
 				"FROM CRM_TRN_PROSPECT LEFT JOIN CRM_MST_USER ON CRM_TRN_PROSPECT.PROSPECT_CREATEDBY = CRM_MST_USER.USER_USERID "+
 				" WHERE PROSPECT_UPDATEDDATE >= '" + 
 				getParameters().getStartDate() + 
-				"' AND PROSPECT_UPDATEDDATE <= '" + 
+				"' AND PROSPECT_UPDATEDDATE < '" + 
 				getParameters().getEndDate() + 
 				"' ";
 		

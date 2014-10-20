@@ -160,7 +160,7 @@ public final class UpdatedCases extends Report  implements DataAttributes
 				" FROM CRM_TRN_ACTIVITY " + 
 				" WHERE CRM_TRN_ACTIVITY.activity_createddate >= '" + 
 				getParameters().getStartDate() +
-				"' AND CRM_TRN_ACTIVITY.activity_createddate <= '" + 
+				"' AND CRM_TRN_ACTIVITY.activity_createddate < '" + 
 				getParameters().getEndDate() + "" +
 						"' " + 
 				" and CRM_TRN_ACTIVITY.activity_pagesource='Updated' and " + 

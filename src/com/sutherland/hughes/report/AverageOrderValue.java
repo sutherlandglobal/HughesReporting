@@ -198,7 +198,7 @@ public class AverageOrderValue extends Report implements DataAttributes
 
 		String query = 
 			"SELECT ORDDET_CREATEDBY,ORDDET_CREATEDDATE,ORDDET_AMOUNT " + " FROM CRM_TRN_ORDERDETAILS " +  
-			" WHERE ORDDET_CREATEDDATE >= '" + getParameters().getStartDate() + "' AND ORDDET_CREATEDDATE <= '" +  getParameters().getEndDate() + "'";
+			" WHERE ORDDET_CREATEDDATE >= '" + getParameters().getStartDate() + "' AND ORDDET_CREATEDDATE < '" +  getParameters().getEndDate() + "'";
 
 		Aggregation reportGrainData = new Aggregation();
 

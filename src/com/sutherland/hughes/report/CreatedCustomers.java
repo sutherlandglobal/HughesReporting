@@ -190,7 +190,7 @@ public final class CreatedCustomers extends Report implements DataAttributes
 				" CRM_MST_CONTACT LEFT JOIN CRM_TRN_PROSPECT on CRM_MST_CONTACT.CONT_CONTACTID = CRM_TRN_PROSPECT.PROSPECT_CONTACTID " + 
 				" where " + 
 				"CRM_MST_CONTACT.CONT_CREATEDDATE >= '" + getParameters().getStartDate() +
-				"' and CRM_MST_CONTACT.CONT_CREATEDDATE <= '" + getParameters().getEndDate() +"'";
+				"' and CRM_MST_CONTACT.CONT_CREATEDDATE < '" + getParameters().getEndDate() +"'";
 		
 		retval = new ArrayList<String[]>();
 		

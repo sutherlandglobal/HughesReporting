@@ -200,7 +200,7 @@ public final class ACWTime extends Report implements DataAttributes
 				"FROM tbl_PFS_CMS_Hagent INNER JOIN CRM_MST_USER ON tbl_PFS_CMS_Hagent.logid = CRM_MST_USER.USER_EXTENSION " +
 				"WHERE tbl_PFS_CMS_Hagent.row_date >= '" +  
 				getParameters().getStartDate() + 
-				"' AND tbl_PFS_CMS_Hagent.row_date <= '" +   
+				"' AND tbl_PFS_CMS_Hagent.row_date < '" +   
 				getParameters().getEndDate() + 
 				"'" ;
 		

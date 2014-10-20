@@ -156,7 +156,7 @@ public class TopRefundDrivers extends Report
 		" FROM CRM_TRN_REFUND INNER JOIN CRM_MST_REFVALUES ON CRM_TRN_REFUND.REFUND_REASON = CRM_MST_REFVALUES.REFVAL_REFVALID " + 
 		" WHERE CRM_TRN_REFUND.REFUND_CREATEDDATE >= '" + 
 		getParameters().getStartDate() + 
-		"' AND CRM_TRN_REFUND.REFUND_CREATEDDATE <= '" + 
+		"' AND CRM_TRN_REFUND.REFUND_CREATEDDATE < '" + 
 		getParameters().getEndDate() + 
 		"'";
 		

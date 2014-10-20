@@ -159,7 +159,7 @@ public class RefundTotals extends Report implements DataAttributes
 				" FROM CRM_TRN_REFUND INNER JOIN CRM_TRN_ORDER ON CRM_TRN_REFUND.REFUND_ORDERID = CRM_TRN_ORDER.ORDER_ORDERID " +  
 				" WHERE CRM_TRN_REFUND.REFUND_CREATEDDATE >= '" + 
 				getParameters().getStartDate() + 
-				"' AND CRM_TRN_REFUND.REFUND_CREATEDDATE <= '" + 
+				"' AND CRM_TRN_REFUND.REFUND_CREATEDDATE < '" + 
 				getParameters().getEndDate() +
 				"' AND CRM_TRN_REFUND.REFUND_REFUNDTYPEID != 20000570 ";
 		

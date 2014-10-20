@@ -168,7 +168,7 @@ public class NoSaleDrivers extends Report
 				" LEFT JOIN CRM_MST_USER ON CRM_TRN_PROSPECT.PROSPECT_CREATEDBY = CRM_MST_USER.USER_USERID " +
 				"WHERE PROSPECT_CREATEDDATE >= '" + 
 				getParameters().getStartDate()  + 
-				"' AND PROSPECT_CREATEDDATE <= '" + 
+				"' AND PROSPECT_CREATEDDATE < '" + 
 				getParameters().getEndDate()+ 
 				"'  AND REFVAL_DISPLAYVALUE is not null ";
 		
