@@ -113,6 +113,13 @@
 		
 		<unzip src="${SITE_LIB}/Helios.jar" dest="${SITE_BUILD_DIR}/webapp/WebContent/css" >
 		    <patternset>
+		        <include name="resources/css/*"/>
+		    </patternset>
+		    <mapper type="flatten"/>
+		</unzip>
+		
+		<unzip src="${SITE_LIB}/Helios.jar" dest="${SITE_BUILD_DIR}/webapp/WebContent/css" >
+		    <patternset>
 		        <include name="resources/site/css/*"/>
 		    </patternset>
 		    <mapper type="flatten"/>
@@ -236,7 +243,7 @@
     	<!-- project building here -->
     	
         <echo message="${ant.project.name}: ${ant.file}"/>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" verbose="on" excludes ="**/package-info.java">
+        <javac includeantruntime="false"  debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" verbose="on" excludes ="**/package-info.java">
             <src path="${SITE_SRC_DIR}"/>
         	<src path="${SITE_BUILD_DIR}"/>
             <classpath refid="site.build.classes"/>
